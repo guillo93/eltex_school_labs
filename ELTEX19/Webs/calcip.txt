@@ -1,0 +1,128 @@
+#BIT VAR WITH CAPITAL LETTERS
+#!/bin/bash
+echo "Enter ip and netmask";
+read ip mask;
+
+#for ip address
+show_ip=$ip;
+ip=${ip//./ };#'.'>' '
+BARRAY=({0..1}{0..1}{0..1}{0..1}{0..1}{0..1}{0..1}{0..1});
+BINARY_IP=$(for octet in $ip; do echo -n ${BARRAY[octet]}" "; done);
+SHOW_IP=`echo "${BINARY_IP// /.}" | sed 's/.$//'`;
+BIN_IP_SEP1=${BINARY_IP//1/1 };#Dision bits
+BINARY_IP_ARRAY=( ${BIN_IP_SEP1//0/0 } );
+
+#for mask
+show_mask=$mask;
+mask=${mask//./ };
+BINARY_MASK=$(for octet in $mask; do echo -n ${BARRAY[octet]}" "; done);
+SHOW_MASK=`echo "${BINARY_MASK// /.}" | sed 's/.$//'`;
+BIN_MASK_SEP1=${BINARY_MASK//1/1 };
+BINARY_MASK_ARRAY=( ${BIN_MASK_SEP1//0/0 } );
+
+#for mask prefix
+BITS_COUNT=0;
+for i in ${BINARY_MASK_ARRAY[@]}
+do
+	[ "$i" == "1" ] && BITS_COUNT=$((BITS_COUNT+1));
+done
+
+#for network
+NETWORK="";
+for i in {0..31}
+do
+	[ $(($i % 8)) -ne 0 ] || NETWORK+=" ";#' ' after every 8 bit
+	if [ "${BINARY_MASK_ARRAY[$i]}" == "1" ]; then
+		NETWORK+="${BINARY_IP_ARRAY[$i]}";
+	else
+		NETWORK+="${BINARY_MASK_ARRAY[$i]}";
+	fi
+done
+network=`echo $(for octet in $NETWORK; do echo $((2#$octet)); done)`;
+network=${network// /.};
+SHOW_NETWORK=`echo "${NETWORK// /.}" | sed 's/^.//'`;
+
+#for wildcard
+WILDCARD="";
+for i in {0..31}
+do
+	[ $(($i % 8)) -ne 0 ] || WILDCARD+=" ";
+	if [ "${BINARY_MASK_ARRAY[$i]}" == "1" ]; then
+		WILDCARD+="0";
+	else
+		WILDCARD+="1";
+	fi
+done
+wildcard=`echo $(for octet in $WILDCARD; do echo $((2#$octet)); done)`;
+wildcard=${wildcard// /.};
+SHOW_WILDCARD=`echo "${WILDCARD// /.}" | sed 's/^.//'`;
+
+#for hostmin
+HOSTMIN=`echo "$NETWORK" | sed 's/0$/1/'`;
+hostmin=`echo $(for octet in $HOSTMIN; do echo $((2#$octet)); done)`;
+hostmin=${hostmin// /.};
+SHOW_HOSTMIN=`echo "${HOSTMIN// /.}" | sed 's/^.//'`;
+
+#for broadcast
+BROADCAST="";
+for i in {0..31}
+do
+	if [ $i -le $(($BITS_COUNT-1)) ]; then
+		[ $(($i % 8)) -ne 0 ] || BROADCAST+=" ";
+		if [ "${BINARY_MASK_ARRAY[$i]}" == "1" ]; then
+			BROADCAST+="${BINARY_IP_ARRAY[$i]}";
+		else
+			BROADCAST+="${BINARY_MASK_ARRAY[$i]}";
+		fi
+	else
+		[ $(($i % 8)) -ne 0 ] || BROADCAST+=" ";
+		BROADCAST+="1";
+	fi
+done
+broadcast=`echo $(for octet in $BROADCAST; do echo $((2#$octet)); done)`;
+broadcast=${broadcast// /.};
+SHOW_BROADCAST=`echo "${BROADCAST// /.}" | sed 's/^.//'`;
+
+#for hostmax
+HOSTMAX=`echo "$BROADCAST" | sed 's/1$/0/'`;
+hostmax=`echo $(for octet in $HOSTMAX; do echo $((2#$octet)); done)`;
+hostmax=${hostmax// /.};
+SHOW_HOSTMAX=`echo "${HOSTMAX// /.}" | sed 's/^.//'`;
+
+HOSTS=$((2**(32-BITS_COUNT)-2));
+
+#for class
+CLASS="";
+if [ ${SHOW_NETWORK:0:1} -eq 0 ]; then
+	CLASS="A";
+elif [ ${SHOW_NETWORK:0:2} -eq 10 ]; then
+	CLASS="B";
+elif [ ${SHOW_NETWORK:0:3} -eq 110 ]; then
+	CLASS="C";
+elif [ ${SHOW_NETWORK:0:4} -eq 1110 ]; then
+	CLASS="D";
+elif [ ${SHOW_NETWORK:0:5} -eq 11110 ]; then
+	CLASS="E";
+fi
+
+echo "Address: | $show_ip| $SHOW_IP" >> /home/amelnikov99/Documents/webs/calcdata.txt;
+echo "Netmask: | $show_mask = $BITS_COUNT | $SHOW_MASK" >> /home/amelnikov99/Documents/webs/calcdata.txt;
+echo "Wildcard: | $wildcard | $SHOW_WILDCARD" >> /home/amelnikov99/Documents/webs/calcdata.txt;
+echo "Network: | $network/$BITS_COUNT | $SHOW_NETWORK" >> /home/amelnikov99/Documents/webs/calcdata.txt;
+if [ $HOSTS -ne -1 ]; then
+	echo "HostMin: | $hostmin | $SHOW_HOSTMIN" >> /home/amelnikov99/Documents/webs/calcdata.txt;
+	echo "HostMax: | $hostmax | $SHOW_HOSTMAX" >> /home/amelnikov99/Documents/webs/calcdata.txt;
+	echo "Broadcast: | $broadcast | $SHOW_BROADCAST" >> /home/amelnikov99/Documents/webs/calcdata.txt;
+	echo "Hosts: | $HOSTS | Class $CLASS" >> /home/amelnikov99/Documents/webs/calcdata.txt;
+else
+	echo "Hostroute: | $hostmin | $SHOW_HOSTMIN" >> /home/amelnikov99/Documents/webs/calcdata.txt;
+	echo "Hosts: | 1 | Class $CLASS" >> /home/amelnikov99/Documents/webs/calcdata.txt;
+fi
+cat /home/amelnikov99/Documents/webs/calcdata.txt | column -t -s '|';
+rm /home/amelnikov99/Documents/webs/calcdata.txt;
+
+
+
+
+
+
