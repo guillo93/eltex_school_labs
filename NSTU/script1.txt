@@ -1,0 +1,28 @@
+#!/bin/bash
+echo "Chose the directory";
+read adr; #home/work/wrk
+echo "Enter nubmer of directory";
+read dn;
+echo "Enter pattern for directory";
+read dp;
+for ((i=1;i<=dn;i++))
+do
+	mkdir $adr/$dp$i
+	echo "Enter nubmer of files in $dp$i";
+	read fn;
+	echo "Enter pattern for files";
+	read fp;
+	for ((q=1;q<=fn;q++))
+	do
+		touch $adr/$dp$i/$fp$q
+	done
+done
+cd $adr;
+echo "$adr";
+ls;
+for ((i=1;i<=dn;i++))
+do
+	cd $adr/$dp$i;
+	echo "$adr/$dp$i";
+	ls;
+done

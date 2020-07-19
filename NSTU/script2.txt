@@ -1,0 +1,66 @@
+#!/bin/bash
+division() {
+	if [[ $b -eq 0 ]]; then
+		echo "Error: division by zero"
+	elif [[ $(($a/$b)) -eq 0 ]]; then
+		echo "0,$(($a*100/$b))";
+	else
+		echo "$(($a/$b)),$(($a%$b*10/$b))$(($a%$b*10%$b*10/$b))";
+	fi
+}
+clear;
+w=1;
+while [[ $w -eq 1 ]]
+do
+	w=0;
+	echo "1. Enter data";
+	echo "2. Chose operation";
+	echo "3. Show result";
+	echo "4. Exit";
+	read i;
+	case $i in
+	1)
+		echo "Enter a";
+		read a;
+		echo "Enter b";
+		read b;
+		w=1;
+	;;
+	2)
+		w1=1;
+		while [[ w1 -eq 1 ]]
+		do
+			w1=0;
+			echo "Chose operation";
+			echo "1. a+b";
+			echo "2. a-b";
+			echo "3. a*b";
+			echo "4. a/b";
+			read oper;
+			if [[ $oper -eq 1 ]] || [[ $oper -eq 2 ]] || [[ $oper -eq 3 ]] || [[ $oper -eq 4 ]]; then
+				w=1;
+				else
+				echo "Invalid value";
+				w1=1;
+			fi
+		done
+	;;
+	3)
+		if [[ $oper -eq 1 ]]; then
+			echo "a+b=$(($a+$b))";
+		elif [[ $oper -eq 2 ]]; then
+			echo "a+b=$(($a-$b))";
+		elif [[ $oper -eq 3 ]]; then
+			echo "a+b=$(($a*$b))";
+		else
+			division;
+		fi
+		w=1;
+	;;
+	4)
+		exit 0;
+	;;
+	*)
+		echo "Invalid value";
+	esac
+done
