@@ -36,7 +36,7 @@ set_player(){
 				   loop=1;;
 			esac
 		done
-		sudo apt install $chosed_player;
+		sudo apt install $chosed_player -y;
 	else
 		loop=1;
 		player_list=($player_list);
